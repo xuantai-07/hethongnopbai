@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container container-wide">
+    <h1>Quản lý bài tập và bài nộp</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    {# ────────────────────────────────────────────────────────
+       TẠO BÀI TẬP MỚI
+       ──────────────────────────────────────────────────────── #}
+
+    <form method="POST"
+          action="{{ url_for('main.create_assignment') }}"
+          enctype="multipart/form-data">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <h2>Tạo bài tập mới</h2>
+
+        <label for="title">Tên bài tập</label>
+        <input
+            id="title"
+            name="title"
+            maxlength="200"
+            placeholder="Ví dụ: Lập trình Python - Bài 1"
+            required
+        >
+
+        <label for="description">Ghi chú (không bắt buộc)</label>
+        <textarea
+            id="description"
+            name="description"
+            rows="3"
+            placeholder="Ví dụ: Làm bài cá nhân, nộp một tệp duy nhất."
+        ></textarea>
+
+        <label for="assignment_file">Tệp đề bài</label>
+        <input
+            id="assignment_file"
+            name="assignment_file"
+            type="file"
+            accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.zip"
+            required
+        >
+        <small class="form-help">
+            Định dạng hỗ trợ: PDF, DOC, DOCX, PPT, PPTX, TXT, ZIP.
+            Dung lượng tối đa: 20 MB.
+        </small>
+
+        <label for="deadline">Hạn nộp (có thể để trống)</label>
+        <input
+            id="deadline"
+            name="deadline"
+            type="datetime-local"
+        >
+
+        <button type="submit">Tạo bài tập</button>
+    </form>
+
+    <hr>
+
+    {# ────────────────────────────────────────────────────────
+       DANH SÁCH BÀI TẬP
+       ──────────────────────────────────────────────────────── #}
+
+    <h2>Danh sách bài tập</h2>
+
+    {% if assignments %}
+        {% for assignment in assignments %}
+            <div class="submission-info">
+                <h3>{{ assignment.title }}</h3>
+
+                <p>{{ assignment.description or "Không có mô tả." }}</p>
+
+                <p>
+                    <strong>Hạn nộp:</strong>
+                    {% if assignment.deadline %}
+                        {{ assignment.deadline.strftime('%d/%m/%Y %H:%M') }}
+                    {% else %}
+                        Không giới hạn
+                    {% endif %}
+                </p>
+
+                <p>
+                    <strong>Trạng thái:</strong>
+                    {% if assignment.is_open %}
+                        <span class="badge badge-latest">Đang mở</span>
+                    {% else %}
+                        <span class="badge badge-old">Đã đóng</span>
+                    {% endif %}
+                </p>
+
+                <p>
+                    <strong>Số lượt nộp:</strong>
+                    {{ submission_counts.get(assignment.id, 0) }}
+                </p>
+
+                {# Nhóm 1.7: giảng viên tải đề bài kể cả đã đóng #}
+                {% if assignment.assignment_stored_filename %}
+                    <p>
+                        <a href="{{ url_for('main.download_assignment', assignment_id=assignment.id) }}">
+                            📥 Tải đề bài: {{ assignment.assignment_original_filename }}
+                        </a>
+                    </p>
+                {% endif %}
+
+                {# Nút hành động #}
+                <div class="btn-group">
+                    {# Nhóm 3.4: hỏi xác nhận trước khi đóng bài #}
+                    <form method="POST"
+                          action="{{ url_for('main.toggle_assignment', assignment_id=assignment.id) }}"
+                          {% if assignment.is_open %}
+                          data-confirm="Bạn có chắc muốn ĐÓNG bài tập «{{ assignment.title }}»? Sinh viên sẽ không thể nộp bài nữa."
+                          {% endif %}>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn-sm {% if assignment.is_open %}btn-warning{% endif %}">
+                            {{ "🔒 Đóng bài" if assignment.is_open else "🔓 Mở lại" }}
+                        </button>
+                    </form>
+
+                    {# Nhóm 3.2: tải ZIP #}
+                    {% if submission_counts.get(assignment.id, 0) > 0 %}
+                        <a href="{{ url_for('main.download_all_submissions', assignment_id=assignment.id, latest_only=0) }}"
+                           class="btn btn-sm">
+                            📦 ZIP tất cả
+                        </a>
+                        <a href="{{ url_for('main.download_all_submissions', assignment_id=assignment.id, latest_only=1) }}"
+                           class="btn btn-sm btn-secondary">
+                            📦 ZIP mới nhất
+                        </a>
+                    {% endif %}
+
+                    {# Nhóm 3.3: sửa #}
+                    <button type="button"
+                            class="btn-sm btn-edit-toggle"
+                            data-target="edit-form-{{ assignment.id }}">
+                        ✏️ Sửa
+                    </button>
+
+                    {# Nhóm 3.3: xóa #}
+                    <form method="POST"
+                          action="{{ url_for('main.delete_assignment', assignment_id=assignment.id) }}"
+                          data-confirm="⚠️ XÓA bài tập «{{ assignment.title }}» và TẤT CẢ {{ submission_counts.get(assignment.id, 0) }} bài nộp? Hành động này không thể hoàn tác!">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn-sm btn-danger">🗑 Xóa</button>
+                    </form>
+                </div>
+
+                {# Nhóm 3.3: form sửa bài tập (ẩn mặc định) #}
+                <div id="edit-form-{{ assignment.id }}" class="edit-form" hidden>
+                    <form method="POST"
+                          action="{{ url_for('main.edit_assignment', assignment_id=assignment.id) }}"
+                          enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <label>Tên bài tập</label>
+                        <input name="title"
+                               value="{{ assignment.title }}"
+                               maxlength="200"
+                               required>
+
+                        <label>Ghi chú</label>
+                        <textarea name="description"
+                                  rows="2">{{ assignment.description or '' }}</textarea>
+
+                        <label>Hạn nộp</label>
+                        <input name="deadline"
+                               type="datetime-local"
+                               value="{{ assignment.deadline.strftime('%Y-%m-%dT%H:%M') if assignment.deadline else '' }}">
+
+                        <label>Thay tệp đề bài (bỏ trống nếu giữ nguyên)</label>
+                        <input name="assignment_file"
+                               type="file"
+                               accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.zip">
+
+                        <button type="submit" class="btn-sm">💾 Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Chưa có bài tập nào. Hãy tạo bài tập đầu tiên ở phía trên.</p>
+    {% endif %}
+
+    <hr>
+
+    {# ────────────────────────────────────────────────────────
+       LỊCH SỬ NỘP BÀI (phân trang + lọc)
+       ──────────────────────────────────────────────────────── #}
+
+    <h2>Lịch sử nộp bài</h2>
+
+    {# Nhóm 2.3: thanh lọc + nhóm 3.1: xuất Excel #}
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('main.teacher_dashboard') }}" class="filter-form">
+            <label for="filter-assignment" class="sr-only">Lọc theo bài tập</label>
+            <select id="filter-assignment" name="assignment_id">
+                <option value="0">Tất cả bài tập</option>
+                {% for a in assignments %}
+                    <option value="{{ a.id }}"
+                        {%- if filter_assignment_id == a.id %} selected{% endif -%}
+                    >{{ a.title }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <a href="{{ url_for('main.export_excel', assignment_id=filter_assignment_id) }}"
+           class="btn btn-sm">
+            📊 Xuất Excel
+        </a>
+    </div>
+
+    {% if submissions %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã nhận</th>
+                        <th>Bài tập</th>
+                        <th>Họ tên</th>
+                        <th>Số báo danh</th>
+                        <th>Mã sinh viên</th>
+                        <th>Tệp bài làm</th>
+                        <th>Thời gian nộp</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td>{{ submission.id }}</td>
+                        <td>{{ submission.assignment.title }}</td>
+                        <td>{{ submission.student_name }}</td>
+                        <td>{{ submission.student_number }}</td>
+                        <td>{{ submission.student_code }}</td>
+                        <td>
+                            <a href="{{ url_for('main.download_submission', submission_id=submission.id) }}">
+                                📥 {{ submission.original_filename }}
+                            </a>
+                        </td>
+                        <td>
+                            {{ submission.submitted_at.strftime('%d/%m/%Y %H:%M:%S') }}
+                        </td>
+                        <td>
+                            {% if submission.id in latest_submission_ids %}
+                                <span class="badge badge-latest">Mới nhất</span>
+                            {% else %}
+                                <span class="badge badge-old">Bản cũ</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {# Nhóm 3.3: xóa bài nộp #}
+                            <form method="POST"
+                                  action="{{ url_for('main.delete_submission', submission_id=submission.id) }}"
+                                  data-confirm="Xóa bài nộp #{{ submission.id }} của {{ submission.student_name }}?"
+                                  style="display:inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-sm btn-danger">🗑</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Nhóm 2.3: phân trang #}
+        {% if pagination.pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for('main.teacher_dashboard', page=pagination.prev_num, assignment_id=filter_assignment_id) }}">
+                    « Trước
+                </a>
+            {% endif %}
+
+            {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if p %}
+                    <a href="{{ url_for('main.teacher_dashboard', page=p, assignment_id=filter_assignment_id) }}"
+                       class="{{ 'active' if p == pagination.page else '' }}">
+                        {{ p }}
+                    </a>
+                {% else %}
+                    <span class="ellipsis">…</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <a href="{{ url_for('main.teacher_dashboard', page=pagination.next_num, assignment_id=filter_assignment_id) }}">
+                    Sau »
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <p class="text-muted">
+            Hiển thị {{ submissions|length }} / {{ pagination.total }} bài nộp
+            (trang {{ pagination.page }} / {{ pagination.pages }})
+        </p>
+    {% else %}
+        <p>Chưa có sinh viên nộp bài{{ " cho bài tập đã chọn" if filter_assignment_id else "" }}.</p>
+    {% endif %}
+
+    <hr>
+
+    <div class="btn-group">
+        <button type="button"
+                class="btn-sm btn-edit-toggle"
+                data-target="change-password-form">
+            🔑 Đổi mật khẩu
+        </button>
+        <form method="POST" action="{{ url_for('main.teacher_logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-sm btn-secondary">Đăng xuất</button>
+        </form>
+        <a href="{{ url_for('main.index') }}" class="btn btn-sm">Xem trang sinh viên</a>
+    </div>
+
+    <div id="change-password-form" class="edit-form" hidden>
+        <form method="POST" action="{{ url_for('main.change_password') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <h3>Đổi mật khẩu giảng viên</h3>
+
+            <label for="current_password">Mật khẩu hiện tại</label>
+            <input id="current_password"
+                   name="current_password"
+                   type="password"
+                   autocomplete="current-password"
+                   required>
+
+            <label for="new_password">Mật khẩu mới (tối thiểu 12 ký tự)</label>
+            <input id="new_password"
+                   name="new_password"
+                   type="password"
+                   minlength="12"
+                   autocomplete="new-password"
+                   required>
+
+            <label for="confirm_password">Nhập lại mật khẩu mới</label>
+            <input id="confirm_password"
+                   name="confirm_password"
+                   type="password"
+                   minlength="12"
+                   autocomplete="new-password"
+                   required>
+
+            <button type="submit" class="btn-sm">💾 Cập nhật mật khẩu</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

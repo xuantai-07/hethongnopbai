@@ -1,0 +1,330 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f3f6fb;
+    color: #1f2937;
+}
+
+header {
+    background: #173b70;
+    color: white;
+    padding: 20px;
+}
+
+.header-inner {
+    max-width: 1000px;
+    margin: auto;
+}
+
+.brand {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.subtitle {
+    display: block;
+    margin-top: 5px;
+    opacity: 0.9;
+}
+
+main {
+    min-height: 75vh;
+    padding: 35px 16px;
+}
+
+.container {
+    max-width: 760px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 5px 24px rgba(0, 0, 0, 0.07);
+}
+
+.container-wide {
+    max-width: 1080px;
+}
+
+h1 {
+    margin-top: 0;
+    color: #173b70;
+}
+
+label {
+    display: block;
+    margin-top: 18px;
+    margin-bottom: 7px;
+    font-weight: 600;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #93c5fd;
+    border-color: #2563eb;
+}
+
+.form-help {
+    display: block;
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+button,
+.btn {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+button:hover,
+.btn:hover {
+    background: #1d4ed8;
+}
+
+.btn-sm {
+    margin-top: 0;
+    padding: 7px 13px;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.btn-secondary {
+    background: #475569;
+}
+
+.btn-secondary:hover {
+    background: #334155;
+}
+
+.btn-warning {
+    background: #d97706;
+}
+
+.btn-warning:hover {
+    background: #b45309;
+}
+
+.btn-danger {
+    background: #dc2626;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.btn-group form {
+    margin: 0;
+}
+
+.edit-form {
+    margin-top: 16px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+.edit-form button {
+    margin-top: 14px;
+}
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.filter-form {
+    flex: 1;
+    max-width: 340px;
+}
+
+.filter-form select {
+    padding: 8px 12px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 18px 0 8px;
+}
+
+.pagination a,
+.pagination .ellipsis {
+    padding: 6px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #173b70;
+    font-size: 14px;
+}
+
+.pagination a.active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+.pagination a:hover:not(.active) {
+    background: #eaf0fa;
+}
+
+.text-muted {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.message {
+    margin: 15px 0;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.message.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.message.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.teacher-link {
+    margin-top: 25px;
+}
+
+a {
+    color: #2563eb;
+}
+
+footer {
+    padding: 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+
+    .brand {
+        font-size: 19px;
+    }
+}
+
+.submission-info {
+    margin: 18px 0;
+    padding: 18px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+}
+
+.submission-info h3 {
+    margin-top: 0;
+    color: #173b70;
+}
+
+textarea {
+    resize: vertical;
+}
+
+hr {
+    margin: 30px 0;
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14px;
+}
+
+th,
+td {
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    background: #eaf0fa;
+    color: #173b70;
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-latest {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-old {
+    background: #f1f5f9;
+    color: #64748b;
+}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>🎉 Nộp bài thành công!</h1>
+
+    <p>Hệ thống đã ghi nhận bài nộp của bạn.</p>
+
+    <div class="submission-info">
+        <p><strong>Mã biên nhận:</strong> {{ submission.id }}</p>
+        <p><strong>Bài tập:</strong> {{ submission.assignment.title }}</p>
+        <p><strong>Họ tên:</strong> {{ submission.student_name }}</p>
+        <p><strong>Số báo danh:</strong> {{ submission.student_number }}</p>
+        <p><strong>Mã sinh viên:</strong> {{ submission.student_code }}</p>
+        <p><strong>Tệp đã nộp:</strong> {{ submission.original_filename }}</p>
+        <p>
+            <strong>Thời gian nộp:</strong>
+            {{ submission.submitted_at.strftime('%d/%m/%Y %H:%M:%S') }}
+        </p>
+    </div>
+
+    <p>Hãy lưu lại mã biên nhận để đối chiếu khi cần.</p>
+
+    <a href="{{ url_for('main.index') }}">Quay lại trang nộp bài</a>
+</div>
+{% endblock %}

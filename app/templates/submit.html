@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Hệ thống giao và thu bài sinh viên</h1>
+
+    <p>Chọn bài tập, tải đề bài và nộp tệp bài làm lên hệ thống.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    {% if assignments %}
+    {# Nhóm 1.3: ghi rõ định dạng và dung lượng cho phép #}
+    <form id="submit-form"
+          method="POST"
+          action="{{ url_for('main.submit_assignment') }}"
+          enctype="multipart/form-data"
+          data-allowed-ext="{{ allowed_extensions_list }}"
+          data-max-size="{{ max_content_length }}">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label for="assignment_id">Bài tập</label>
+
+        <select id="assignment_id" name="assignment_id" required>
+            <option value="">-- Chọn bài tập --</option>
+
+            {% for assignment in assignments %}
+                <option value="{{ assignment.id }}"
+                    {%- if form_data.get('assignment_id')|string == assignment.id|string %} selected{% endif -%}
+                >
+                    {{ assignment.title }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Khu vực hiển thị đề bài -->
+        <div id="assignment-details">
+            {% for assignment in assignments %}
+                <div class="assignment-detail"
+                     data-assignment-id="{{ assignment.id }}"
+                     hidden>
+
+                    <h3>📚 Đề bài: {{ assignment.title }}</h3>
+
+                    {% if assignment.description %}
+                        <p>{{ assignment.description }}</p>
+                    {% endif %}
+
+                    {% if assignment.assignment_stored_filename %}
+                        <a href="{{ url_for(
+                            'main.download_assignment',
+                            assignment_id=assignment.id
+                        ) }}">
+                            📥 Tải đề bài:
+                            {{ assignment.assignment_original_filename }}
+                        </a>
+                    {% else %}
+                        <p>⚠️ Bài tập này chưa có tệp đề bài.</p>
+                    {% endif %}
+
+                    {% if assignment.deadline %}
+                        <p>
+                            <strong>Hạn nộp:</strong>
+                            {{ assignment.deadline.strftime('%d/%m/%Y %H:%M') }}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <label for="student_name">Họ và tên</label>
+        <input
+            type="text"
+            id="student_name"
+            name="student_name"
+            maxlength="150"
+            value="{{ form_data.get('student_name', '') }}"
+            required
+        >
+
+        <label for="student_number">Số báo danh</label>
+        <input
+            type="text"
+            id="student_number"
+            name="student_number"
+            maxlength="50"
+            pattern="[A-Za-z0-9._\-]{2,50}"
+            title="Chữ không dấu, số, dấu chấm, gạch ngang hoặc gạch dưới (2–50 ký tự)"
+            value="{{ form_data.get('student_number', '') }}"
+            required
+        >
+
+        <label for="student_code">Mã sinh viên</label>
+        <input
+            type="text"
+            id="student_code"
+            name="student_code"
+            maxlength="50"
+            pattern="[A-Za-z0-9._\-]{2,50}"
+            title="Chữ không dấu, số, dấu chấm, gạch ngang hoặc gạch dưới (2–50 ký tự)"
+            value="{{ form_data.get('student_code', '') }}"
+            required
+        >
+
+        <label for="file">Tệp bài làm</label>
+        <input
+            type="file"
+            id="file"
+            name="file"
+            accept="{{ allowed_extensions_accept }}"
+            required
+        >
+        {# Nhóm 1.3: hiển thị rõ định dạng và dung lượng cho phép #}
+        <small class="form-help">
+            Định dạng cho phép: {{ allowed_extensions_display }}.
+            Dung lượng tối đa: {{ max_size_mb }} MB.
+        </small>
+
+        <button type="submit">Nộp bài</button>
+    </form>
+    {% else %}
+        <p>Hiện không có bài tập nào đang mở.</p>
+    {% endif %}
+</div>
+
+{# Nhóm 1.6: đã bỏ JS inline – dùng main.js từ base.html #}
+{% endblock %}

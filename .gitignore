@@ -1,0 +1,29 @@
+# Môi trường ảo Python
+.venv/
+venv/
+ENV/
+
+# Bytecode và bộ nhớ đệm
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Biến môi trường và khóa bí mật
+.env
+.secret_key
+
+# Dữ liệu thực tế và bản sao lưu
+data/
+backups/
+*.db
+*.db-wal
+*.db-shm
+
+# Trình soạn thảo / IDE
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store
+

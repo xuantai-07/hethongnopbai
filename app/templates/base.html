@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống giao và thu bài</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <span class="brand">NỘP BÀI TRỰC TUYẾN</span>
+            <span class="subtitle">Hệ thống dành cho sinh viên</span>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        Hệ thống giao và thu bài sinh viên
+    </footer>
+
+    <!-- Nhóm 1.6: tải main.js một lần duy nhất từ base -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
