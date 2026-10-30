@@ -27,3 +27,10 @@ backups/
 Thumbs.db
 .DS_Store
 
+# Các tệp cấu hình chứa thông tin bí mật
+.env.*
+!.env.example
+
+# Khóa riêng và chứng chỉ
+*.pem
+*.key
